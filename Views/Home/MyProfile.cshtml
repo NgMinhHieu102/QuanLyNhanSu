@@ -1,0 +1,4 @@
+@model HumaHr.Models.Employee
+@{ ViewData["Title"] = "Hồ sơ của tôi"; }
+<section class="welcome-row"><div><div class="eyebrow"><span class="eyebrow-dot"></span> HỒ SƠ CÁ NHÂN</div><h1>@Model.FullName</h1><p class="page-subtitle">Thông tin nhân sự của bạn. Liên hệ quản trị viên nếu cần cập nhật.</p></div></section>
+<section class="panel info-panel"><h2>Thông tin nhân viên</h2><dl><dt>Mã nhân viên</dt><dd>@Model.Code</dd><dt>Email</dt><dd>@Model.Email</dd><dt>Số điện thoại</dt><dd>@Model.Phone</dd><dt>Phòng ban</dt><dd>@Model.Department</dd><dt>Chức vụ</dt><dd>@Model.Position</dd><dt>Ngày vào làm</dt><dd>@Model.StartDate.ToString("dd/MM/yyyy")</dd><dt>Trạng thái</dt><dd>@(Model.IsActive ? "Đang làm việc" : "Đã nghỉ")</dd></dl></section>

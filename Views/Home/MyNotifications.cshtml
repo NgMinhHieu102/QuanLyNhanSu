@@ -1,0 +1,4 @@
+@model List<HumaHr.Models.EmployeeNotification>
+@{ ViewData["Title"] = "Thông báo của tôi"; }
+<section class="welcome-row"><div><div class="eyebrow"><span class="eyebrow-dot"></span> CẬP NHẬT</div><h1>Thông báo của tôi</h1><p class="page-subtitle">Tình trạng chấm công và các yêu cầu của bạn.</p></div></section>
+<section class="panel list-panel"><div class="table-responsive"><table class="data-table"><thead><tr><th>THỜI GIAN</th><th>NỘI DUNG</th><th>TRẠNG THÁI / PHẢN HỒI</th></tr></thead><tbody>@foreach(var x in Model){<tr><td>@x.Date.ToString("dd/MM/yyyy HH:mm")</td><td>@x.Message</td><td>@x.Status</td></tr>}</tbody></table></div>@if(Model.Count==0){<div class="empty-state">Chưa có thông báo.</div>}</section>

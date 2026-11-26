@@ -1,0 +1,24 @@
+@model List<HumaHr.Models.Department>
+@{ ViewData["Title"]="Phòng ban"; var employees=(List<HumaHr.Models.Employee>)ViewBag.Employees; var allPositions=(List<HumaHr.Models.DepartmentPosition>)ViewBag.Positions; string[] colors=["purple","blue","orange","green"]; }
+<section class="welcome-row"><div><div class="eyebrow"><span class="eyebrow-dot"></span> CƠ CẤU TỔ CHỨC</div><h1>Phòng ban</h1><p class="page-subtitle">Quản lý phòng ban, chức vụ và nhân viên theo đơn vị. Thêm chức vụ trong từng thẻ phòng ban bên dưới.</p></div></section>
+<section class="panel form-panel"><h2>Thêm phòng ban</h2><form asp-action="SaveDepartment" method="post"><input type="hidden" name="id" value="0"/><div class="form-grid"><label>Tên phòng ban<input name="name" maxlength="80" required/></label><label>Người quản lý<input name="manager" maxlength="120"/></label></div><div class="form-actions"><button class="btn-primary" type="submit">Thêm phòng ban</button></div></form></section>
+<section class="department-grid">
+@for(var i=0;i<Model.Count;i++){
+    var d=Model[i]; var members=employees.Where(e=>e.Department==d.Name).ToList(); var departmentPositions=allPositions.Where(p=>p.DepartmentId==d.Id).OrderBy(p=>p.Name).ToList();
+    <article class="panel dept-card">
+        <div class="dept-top"><span class="dept-symbol @colors[i%colors.Length]">▦</span></div><h2>@d.Name</h2><p>@members.Count nhân viên · Quản lý: @d.Manager</p>
+        <form asp-action="SaveDepartment" method="post" class="account-form"><input type="hidden" name="id" value="@d.Id"/><label>Tên phòng ban<input name="name" value="@d.Name" maxlength="80" required/></label><label>Người quản lý<input name="manager" value="@d.Manager" maxlength="120"/></label><button class="btn-outline" type="submit">Lưu thay đổi</button></form>
+        <h3 class="dept-positions-title">Chức vụ trong phòng ban (@departmentPositions.Count)</h3>
+        @if(departmentPositions.Count==0){<p>Chưa có chức vụ. Thêm chức vụ để chọn khi tạo hồ sơ nhân viên.</p>}
+        <ul class="dept-position-list">
+        @foreach(var position in departmentPositions){
+            var inUse=members.Any(e=>e.Position==position.Name);
+            <li><span>@position.Name@if(inUse){<small> · đang có nhân viên</small>}</span><form asp-action="DeleteDepartmentPosition" method="post"><input type="hidden" name="id" value="@position.Id"/><button class="position-delete" type="submit" disabled="@inUse" title="@(inUse?"Đang được nhân viên sử dụng":"Xóa chức vụ")" aria-label="Xóa chức vụ">×</button></form></li>
+        }
+        </ul>
+        <form asp-action="SaveDepartmentPosition" method="post" class="position-add-form"><input type="hidden" name="departmentId" value="@d.Id"/><label>Thêm chức vụ<input name="name" maxlength="80" required placeholder="VD: Chuyên viên tuyển dụng"/></label><button class="btn-outline" type="submit">Thêm chức vụ</button></form>
+        <div class="member-stack">@foreach(var e in members.Take(4)){<i class="avatar-@((e.Id%5)+1)">@e.FullName.Split(' ').Last()[0]</i>}</div>
+        <form asp-action="DeleteDepartment" method="post" onsubmit="return confirm('Xóa phòng ban này?')"><input type="hidden" name="id" value="@d.Id"/><button class="btn-outline" type="submit" disabled="@(members.Count>0)">Xóa phòng ban</button></form>@if(members.Count>0){<small>Chuyển nhân viên sang phòng ban khác trước khi xóa.</small>}
+    </article>
+}
+</section>

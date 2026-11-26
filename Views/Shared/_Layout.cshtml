@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - HTĐ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <a class="brand" asp-controller="Home" asp-action="Index"><span class="brand-mark">H</span><span>HTĐ</span></a>
+        <div class="nav-label overview-label">TỔNG QUAN</div>
+        <nav class="side-nav">
+            @if (User.IsInRole("Admin")) { <a asp-controller="Home" asp-action="Index"><span>◫</span>Tổng quan</a>
+            <a asp-controller="Home" asp-action="Employees"><span>♙</span>Nhân viên <b class="nav-count">@(((HumaHr.Services.HrRepository)Context.RequestServices.GetService(typeof(HumaHr.Services.HrRepository))!).Snapshot().Employees.Count)</b></a> }
+            @if (User.IsInRole("Admin")) { <a asp-controller="Home" asp-action="Departments"><span>▦</span>Phòng ban</a>
+            <a asp-controller="Home" asp-action="Attendance"><span>◷</span>Chấm công</a>
+            <a asp-controller="Home" asp-action="Payroll"><span>＄</span>Bảng lương</a>
+            <a asp-controller="Home" asp-action="Reports"><span>▤</span>Báo cáo</a><a asp-controller="Home" asp-action="AdminRequests"><span>▤</span>Yêu cầu nhân viên</a> } else { <a asp-controller="Home" asp-action="MyProfile"><span>♙</span>Hồ sơ của tôi</a><a asp-controller="Home" asp-action="MyAttendance"><span>◷</span>Chấm công của tôi</a><a asp-controller="Home" asp-action="MyPayroll"><span>＄</span>Lương của tôi</a><a asp-controller="Home" asp-action="MyLeaveRequests"><span>▣</span>Nghỉ phép</a><a asp-controller="Home" asp-action="MyProfileChange"><span>✎</span>Cập nhật hồ sơ</a><a asp-controller="Home" asp-action="MyNotifications"><span>◉</span>Thông báo</a> }
+        </nav>
+        <div class="nav-label tools-label">CÔNG CỤ</div><nav class="side-nav">@if(User.IsInRole("Admin")){<a asp-controller="Home" asp-action="PayrollSettings"><span>◷</span>Lịch làm & ngày nghỉ</a>}<a asp-controller="Home" asp-action="Settings"><span>⚙</span>Cài đặt tài khoản</a></nav>
+        @{ var currentUserId=int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0"); var currentAccount=((HumaHr.Services.AccountService)Context.RequestServices.GetService(typeof(HumaHr.Services.AccountService))!).Find(currentUserId); }<div class="sidebar-bottom"><div class="profile"><div class="profile-avatar">@((currentAccount?.FullName ?? User.Identity?.Name ?? "U").Split(' ').Last()[0])</div><div><strong>@(currentAccount?.FullName ?? User.Identity?.Name)</strong><small>@(currentAccount?.Email ?? User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value)</small></div><form asp-controller="Account" asp-action="Logout" method="post"><button class="logout-button" title="Đăng xuất" aria-label="Đăng xuất">↪</button></form></div></div>
+    </aside>
+    <main class="main-content">
+        <header class="topbar"><div class="breadcrumbs"><span>Workspace</span><span class="crumb-slash">/</span><strong>@ViewData["Title"]</strong></div><div class="top-actions">@if(User.IsInRole("Admin")){<form asp-controller="Home" asp-action="Employees" method="get" class="quick-search" id="quickSearch"><input type="search" name="q" placeholder="Tìm nhân viên…" aria-label="Tìm nhân viên"/><button type="submit" aria-label="Tìm kiếm" title="Tìm kiếm"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button></form><button type="button" class="icon-button" id="searchToggle" aria-label="Mở tìm kiếm" title="Tìm nhân viên"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button><a class="icon-button notification" asp-controller="Home" asp-action="Notifications" aria-label="Thông báo" title="Thông báo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg>@{var repo=(HumaHr.Services.HrRepository)Context.RequestServices.GetService(typeof(HumaHr.Services.HrRepository))!;var snap=repo.Snapshot();var attentionCount=snap.Employees.Count(e=>e.IsActive&&!snap.Attendances.Any(a=>a.EmployeeId==e.Id&&a.Date.Date==DateTime.Today)) + snap.Attendances.Count(a=>a.Date.Date==DateTime.Today&&(a.IsLate||a.LeftEarly));}<i class="notification-count">@attentionCount</i></a>}<a class="top-avatar avatar-link" asp-controller="Home" asp-action="Settings" title="Tài khoản">@((User.Identity?.Name ?? "U").Split(' ').Last()[0])</a></div></header>
+        @if (TempData["Message"] is string message) { <div class="toast-message">✓ @message</div> }
+        @if (TempData["Credentials"] is string credentials) { <div class="credential-message"><strong>Thông tin cấp tài khoản (hiển thị một lần)</strong><span>@credentials</span></div> }
+        <div class="page-body">@RenderBody()</div>
+        <footer class="app-footer"><span>© @DateTime.Today.Year HTĐ · Quản lý nhân sự</span><span><a asp-controller="Home" asp-action="Help">Trợ giúp</a><span>Quản lý nhân sự</span></span></footer>
+    </main>
+</div>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script><script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,19 @@
+@model HumaHr.Models.Employee
+@using System.Text.Json
+@{ ViewData["Title"] = Model.Id == 0 ? "Thêm nhân viên" : "Chỉnh sửa nhân viên"; var positionsByDepartment = (Dictionary<string, List<string>>)ViewBag.PositionsByDepartment; }
+<section class="welcome-row"><div><div class="eyebrow"><span class="eyebrow-dot"></span> HỒ SƠ NHÂN SỰ</div><h1>@ViewData["Title"]</h1><p class="page-subtitle">Điền thông tin để cập nhật hồ sơ nhân viên.</p></div><a class="btn-outline" asp-action="Employees">← Quay lại</a></section>
+<section class="panel form-panel"><form asp-action="SaveEmployee" method="post"><input asp-for="Id" type="hidden"/><div asp-validation-summary="ModelOnly" class="validation-summary"></div><div class="form-grid"><label>Mã nhân viên <input asp-for="Code" placeholder="VD: NV009"/><span asp-validation-for="Code"></span></label><label>Họ và tên <input asp-for="FullName" placeholder="Nguyễn Văn A"/><span asp-validation-for="FullName"></span></label><label>Email công ty / đăng nhập <input asp-for="Email" placeholder="email@congty.vn"/><span asp-validation-for="Email"></span></label><label>Số điện thoại <input asp-for="Phone" placeholder="090..."/></label><label>Phòng ban <select asp-for="Department" id="departmentSelect"><option value="">Chọn phòng ban</option>@foreach(var d in (List<string>)ViewBag.Departments){<option value="@d">@d</option>}</select><span asp-validation-for="Department"></span></label><label>Chức vụ <select asp-for="Position" id="positionSelect"><option value="">Chọn chức vụ</option>@if(positionsByDepartment.TryGetValue(Model.Department, out var currentPositions)){foreach(var position in currentPositions){<option value="@position">@position</option>}}</select><span asp-validation-for="Position"></span></label><label>Ngày vào làm <input asp-for="StartDate" type="date"/></label><label>Lương cơ bản (VNĐ) <input asp-for="Salary" type="number" min="0" step="500000"/></label><label class="checkbox-field"><input asp-for="IsActive"/> Đang làm việc</label>@if(!(bool)(ViewBag.HasAccount ?? false)){<label class="checkbox-field account-checkbox"><input asp-for="CreateAccount"/> Tạo/cấp tài khoản đăng nhập cho nhân viên</label>}else{<label class="account-note">Hồ sơ đã có tài khoản. Email hồ sơ sẽ đồng bộ với email đăng nhập.</label>}</div><div class="form-actions"><a class="btn-outline" asp-action="Employees">Hủy</a><button class="btn-primary" type="submit">Lưu thông tin</button></div></form></section>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const positionsByDepartment = @Html.Raw(JsonSerializer.Serialize(positionsByDepartment));
+        const departmentSelect = document.getElementById('departmentSelect');
+        const positionSelect = document.getElementById('positionSelect');
+        departmentSelect.addEventListener('change', () => {
+            const choices = positionsByDepartment[departmentSelect.value] || [];
+            positionSelect.replaceChildren(new Option('Chọn chức vụ', ''));
+            choices.forEach(position => positionSelect.add(new Option(position, position)));
+            positionSelect.value = '';
+        });
+    </script>
+}
